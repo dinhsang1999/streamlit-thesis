@@ -1,3 +1,13 @@
+#Others
+test
+train
+data
+model
+data.zip
+model.zip
+train.zip
+test.zip
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -98,67 +98,71 @@ knn_val = df_val[knn_features]
 model_cat,model_xgb,model_rf,model_lr,model_knn = load_model()
 lr_scaler,knn_scaler = Scale(lr_train,knn_train)
 
+with st.expander('Show result training'):
+       with st.spinner(" ⏳ Processing training... this may take awhile! \n Don't stop it!"):
+              #CatBoost Predict
+              catboost_train_pred = model_cat.predict(cat_train)
+              catboost_val_pred = model_cat.predict(cat_val)
 
-with st.spinner(" ⏳ Processing training... this may take awhile! \n Don't stop it!"):
-       #CatBoost Predict
-       catboost_train_pred = model_cat.predict(cat_train)
-       catboost_val_pred = model_cat.predict(cat_val)
+              st.write("#### CATBOOST")
+              st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, catboost_train_pred)))
+              st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, catboost_val_pred)))
+              mae = mean_absolute_error(y_val, catboost_val_pred)
+              st.write("MAE:",mae)
+              mape = mean_absolute_percentage_error(catboost_val_pred,y_val)
+              st.write("MAPE:",mape)
 
-       st.write("#### CATBOOST")
-       st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, catboost_train_pred)))
-       st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, catboost_val_pred)))
-       mae = mean_absolute_error(y_val, catboost_val_pred)
-       st.write("MAE:",mae)
-       mape = mean_absolute_percentage_error(catboost_val_pred,y_val)
-       st.write("MAPE:",mape)
+              #XGB Predict
+              xgb_train_pred = model_xgb.predict(xgb_train)
+              xgb_val_pred = model_xgb.predict(xgb_val)
 
-       #XGB Predict
-       xgb_train_pred = model_cat.predict(xgb_train)
-       xgb_val_pred = model_cat.predict(xgb_val)
+              st.write("#### XGB")
+              st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, xgb_train_pred)))
+              st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, xgb_val_pred)))
+              mae = mean_absolute_error(y_val, xgb_val_pred)
+              st.write("MAE:",mae)
+              mape = mean_absolute_percentage_error(xgb_val_pred,y_val)
+              st.write("MAPE:",mape)
 
-       st.write("#### XGB")
-       st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, xgb_train_pred)))
-       st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, xgb_val_pred)))
-       mae = mean_absolute_error(y_val, xgb_val_pred)
-       st.write("MAE:",mae)
-       mape = mean_absolute_percentage_error(xgb_val_pred,y_val)
-       st.write("MAPE:",mape)
+              #random forest Predict
+              rf_train_pred = model_rf.predict(rf_train)
+              rf_val_pred = model_rf.predict(rf_val)
 
-       #random forest Predict
-       rf_train_pred = model_cat.predict(rf_train)
-       rf_val_pred = model_cat.predict(rf_val)
+              st.write("#### Random Forest")
+              st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, rf_train_pred)))
+              st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, rf_val_pred)))
+              mae = mean_absolute_error(y_val, rf_val_pred)
+              st.write("MAE:",mae)
+              mape = mean_absolute_percentage_error(rf_val_pred,y_val)
+              st.write("MAPE:",mape)
 
-       st.write("#### Random Forest")
-       st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, rf_train_pred)))
-       st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, rf_val_pred)))
-       mae = mean_absolute_error(y_val, rf_val_pred)
-       st.write("MAE:",mae)
-       mape = mean_absolute_percentage_error(rf_val_pred,y_val)
-       st.write("MAPE:",mape)
+              #Linear Regression
+              lr_train = lr_scaler.transform(lr_train)
+              lr_val = lr_scaler.transform(lr_val)
+              lr_train_pred = model_lr.predict(lr_train)
+              lr_val_pred = model_lr.predict(lr_val)
 
-       #Lenear Regression
-       lr_train_pred = model_cat.predict(lr_train)
-       lr_val_pred = model_cat.predict(lr_val)
+              st.write("#### Linear Regression")
+              st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, lr_train_pred)))
+              st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, lr_val_pred)))
+              mae = mean_absolute_error(y_val, lr_val_pred)
+              st.write("MAE:",mae)
+              mape = mean_absolute_percentage_error(lr_val_pred,y_val)
+              st.write("MAPE:",mape)
 
-       st.write("#### Linear Regression")
-       st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, lr_train_pred)))
-       st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, lr_val_pred)))
-       mae = mean_absolute_error(y_val, lr_val_pred)
-       st.write("MAE:",mae)
-       mape = mean_absolute_percentage_error(lr_val_pred,y_val)
-       st.write("MAPE:",mape)
+              #KNN
+              knn_train = knn_scaler.transform(knn_train)
+              knn_val = knn_scaler.transform(knn_val)
+              knn_train_pred = model_knn.predict(knn_train)
+              knn_val_pred = model_knn.predict(knn_val)
 
-       #KNN
-       knn_train_pred = model_cat.predict(knn_train)
-       knn_val_pred = model_cat.predict(knn_val)
-
-       st.write("#### Linear Regression")
-       st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, knn_train_pred)))
-       st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, knn_val_pred)))
-       mae = mean_absolute_error(y_val, knn_val_pred)
-       st.write("MAE:",mae)
-       mape = mean_absolute_percentage_error(knn_val_pred,y_val)
-       st.write("MAPE:",mape)
+              st.write("#### KNN")
+              st.write('Train rmse:', np.sqrt(mean_squared_error(y_train, knn_train_pred)))
+              st.write('Validation rmse:', np.sqrt(mean_squared_error(y_val, knn_val_pred)))
+              mae = mean_absolute_error(y_val, knn_val_pred)
+              st.write("MAE:",mae)
+              mape = mean_absolute_percentage_error(knn_val_pred,y_val)
+              st.write("MAPE:",mape)
 
 model_list = ["CatBoost", "XGBoost", "RandomForest", "Linear Regression", "KNN Regression"]
 
