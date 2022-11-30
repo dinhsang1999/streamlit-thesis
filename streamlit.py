@@ -9,6 +9,8 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.metrics import mean_squared_error
 
+from sklearn.linear_model import LinearRegression
+
 from src.model import load_model
 from src.utils import Scale
 from src.data import load_data
@@ -95,7 +97,9 @@ lr_val = df_val[lr_features]
 knn_val = df_val[knn_features]
 
 #Load model
+device = 'cuda'
 model_cat,model_xgb,model_rf,model_lr,model_knn = load_model()
+
 lr_scaler,knn_scaler = Scale(lr_train,knn_train)
 
 with st.expander('Show result training'):
@@ -164,26 +168,69 @@ with st.expander('Show result training'):
               mape = mean_absolute_percentage_error(knn_val_pred,y_val)
               st.write("MAPE:",mape)
 
-model_list = ["CatBoost", "XGBoost", "RandomForest", "Linear Regression", "KNN Regression"]
+              test_cat = df_cat[cat_features]
+              test_xgb = df_xgb[xgb_features]
+              test_rf = df_rf[rf_features]
+              test_lr = df_lr[lr_features]
+              test_knn = df_knn[knn_features]
+              
 
-if st.button('Show result'):
-       with st.spinner(" ⏳ Waiting ... this may take awhile! \n Don't stop it!"):
-              rs_cat = model_cat.predict(var_cat)
-              rs_xgb = model_xgb.predict(var_xgb)
-              rs_rf = model_rf.predict(var_rf)
-              rs_knn = model_knn.predict(var_knn)
-              var_lr = lr_scaler.transform(var_lr)
-              rs_lr = model_lr.predict(var_lr)
-              var_knn = knn_scaler.transform(var_knn)
-              rs_knn =model_knn.predict(var_knn)
+              catboost_test_pred = model_cat.predict(test_cat)
+              xgb_test_pred = model_xgb.predict(test_xgb)
+              rf_test_pred = model_rf.predict(test_rf)
+              lr_test = lr_scaler.transform(test_lr)
+              lr_test_pred = model_lr.predict(lr_test)
+              knn_test = knn_scaler.transform(test_knn)
+              knn_test_pred = model_knn.predict(knn_test)
 
-              result_list = [rs_cat,rs_xgb,rs_rf,rs_lr,rs_knn]
+              first_level = pd.DataFrame(catboost_val_pred, columns=['catboost'])
+              first_level['xgbm'] = xgb_val_pred
+              first_level['random_forest'] = rf_val_pred
+              first_level['linear_regression'] = lr_val_pred
+              first_level['knn'] = knn_val_pred
+              first_level['label'] = y_val.values
 
-              df_rs = pd.DataFrame(result_list)
-              df_rs = df_rs.transpose()
-              df_rs.columns = model_list
-       st.sucess("Done")
-       st.dataframe(df_rs)
+              first_level_test = pd.DataFrame(catboost_test_pred, columns=['catboost'])
+              first_level_test['xgbm'] = xgb_test_pred
+              first_level_test['random_forest'] = rf_test_pred
+              first_level_test['linear_regression'] = lr_test_pred
+              first_level_test['knn'] = knn_test_pred
+
+              meta_model = LinearRegression(n_jobs=-1)
+              first_level.drop('label', axis=1, inplace=True)
+              meta_model.fit(first_level, y_val)
+
+              ensemble_pred = meta_model.predict(first_level)
+              final_predictions = meta_model.predict(first_level_test)
+
+              st.write("### Total:")
+              st.write('Train rmse:', np.sqrt(mean_squared_error(ensemble_pred, y_val)))
+              mae = mean_absolute_error(ensemble_pred, y_val)
+              st.write("MAE:", mae)
+              mape = mean_absolute_percentage_error(ensemble_pred, y_val)
+              st.write("MAPE: ", mape)
+
+
+# model_list = ["CatBoost", "XGBoost", "RandomForest", "Linear Regression", "KNN Regression"]
+
+# if st.button('Show result'):
+#        with st.spinner(" ⏳ Waiting ... this may take awhile! \n Don't stop it!"):
+#               rs_cat = model_cat.predict(var_cat)
+#               rs_xgb = model_xgb.predict(var_xgb)
+#               rs_rf = model_rf.predict(var_rf)
+#               rs_knn = model_knn.predict(var_knn)
+#               var_lr = lr_scaler.transform(var_lr)
+#               rs_lr = model_lr.predict(var_lr)
+#               var_knn = knn_scaler.transform(var_knn)
+#               rs_knn =model_knn.predict(var_knn)
+
+#               result_list = [rs_cat,rs_xgb,rs_rf,rs_lr,rs_knn]
+
+#               df_rs = pd.DataFrame(result_list)
+#               df_rs = df_rs.transpose()
+#               df_rs.columns = model_list
+#        st.sucess("Done")
+#        st.dataframe(df_rs)
        
 
 
